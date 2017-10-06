@@ -220,8 +220,11 @@ class DavProperties extends Command {
 				$sql = $this->getRepairEntrySql($qb, $row);
 				if (!is_null($sql)) {
 					$statements[] = $sql;
+				} else {
+					$this->output->writeln("Error creating sql for row: ".$row['id']);
 				}
 			} catch (\Exception $e) {
+				$this->output->writeln("<error>".$e->getMessage()."</error>");
 			}
 			$bar->advance();
 		}
