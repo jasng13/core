@@ -224,7 +224,7 @@ class DavProperties extends Command {
 					$this->output->writeln("Error creating sql for row: ".$row['id']);
 				}
 			} catch (\Exception $e) {
-				$this->output->writeln("<error>Exception: "..get_class($e)." Message: ".$e->getMessage()."</error>");
+				$this->output->writeln("<error>Exception: ".get_class($e)." Message: ".$e->getMessage()."</error>");
 				\OC::$server->getLogger()->logException($e);
 			}
 			$bar->advance();
