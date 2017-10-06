@@ -23,6 +23,7 @@ namespace OC\Core\Command\Migrate;
 
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Exception\NonUniqueFieldNameException;
+use OC\Files\Filesystem;
 use OC\Files\Node\Node;
 use OCP\DB\QueryBuilder\IQueryBuilder;
 use OCP\IDBConnection;
@@ -146,12 +147,20 @@ class DavProperties extends Command {
 		if (!($user instanceof IUser)) {
 			return null;
 		}
-		$node = \OC::$server->getUserFolder($userId)->get($entry['propertypath']);
-		if ($node instanceof Node && $node->getId()) {
-			$fileId = $node->getId();
-			$updateQuery = $this->getRepairQuery($qb, $fileId, $userId, $entry['propertypath']);
+
+		// Get the user folder (sets up mounts etc)
+		$userFolder = \OC::$server->getUserFolder($userId);
+		/** @var $storage \OC\Files\Storage\Storage */
+		$path = $userFolder->getFullPath('') . substr($entry['propertypath'], 1, strlen($entry['propertypath']));
+		$storage = Filesystem::getStorage($path);
+		$cache = $storage->getCache();
+		$node = $cache->get('files'.$entry['propertypath']);
+		
+		if($node !== false) {
+			$updateQuery = $this->getRepairQuery($qb, $node['fileid'], $userId, $entry['propertypath']);
 			return $updateQuery->getSQL();
 		}
+
 		return null;
 	}
 
